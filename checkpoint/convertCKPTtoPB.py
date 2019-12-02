@@ -12,7 +12,7 @@ graph = tf.get_default_graph()
 sess = tf.Session()
 
 print("Restoring the model to the default graph ...")
-saver = tf.train.import_meta_graph(dir_path + '/checkpoint/yolov3_test_loss=0.8979.ckpt-30.meta')
+saver = tf.train.import_meta_graph(dir_path + '/yolov3_test_loss=0.8979.ckpt-30.meta')
 saver.restore(sess,tf.train.latest_checkpoint(dir_path))
 print("Restoring Done .. ")
 
