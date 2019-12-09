@@ -34,6 +34,9 @@ else :
     print("Missing parameter (image source)")
     raise SystemExit
 
+head, tail = os.path.split(image_path)
+localFileName = tail
+
 original_image = cv2.imread(image_path)
 original_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
 original_image_size = original_image.shape[:2]
@@ -57,7 +60,7 @@ bboxes = utils.nms(bboxes, 0.45, method='nms')
 image = utils.draw_bbox(original_image, bboxes)
 image = Image.fromarray(image)
 
-exportName = "OUT-" + fileName
+exportName = "OUT-" + localFileName
 print("Done. Exporting image to ", exportName)
 image.save(exportName)
 
