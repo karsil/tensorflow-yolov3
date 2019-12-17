@@ -45,7 +45,7 @@ def main():
     sourceFileHead, sourceFileTail = os.path.split(sourcePathAbs)
     outputPath = sourceFileTail + "_" + now
     targetFolder = sourceFileHead + "/" + outputPath
-    print("Files will be saved to folder ", targetFolder)
+    print("Processed files will be saved to folder ", targetFolder)
 
     try:
         os.mkdir(targetFolder)
@@ -58,7 +58,6 @@ def main():
 
     with tf.Session(graph=graph) as sess:
         for line in lines:
-            print(line.split()[0] + " in " + targetFolder)
             process(line.split()[0], targetFolder, sess)
 
 def process(image_path, targetFolder, sess):
