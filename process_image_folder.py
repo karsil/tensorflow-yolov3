@@ -29,34 +29,36 @@ graph           = tf.Graph()
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('folder_path', help='Provide the path to a folder with data')
+    parser.add_argument('file_path', help='Provide the path to a file with data')
     args = parser.parse_args()
 
-    folderPath = args.folder_path
+    inputFilename = args.file_path
 
-    if not os.path.exists(folderPath):
-        print(f"The folder {folderPath} does not exist. Quitting...")
+    if not os.path.exists(inputFilename):
+        print(f"The folder {inputFilename} does not exist. Quitting...")
         sys.exit()
 
 
     now = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 
-    sourcePathAbs = os.path.abspath(folderPath)
-    sourceFolderHead, sourceFolderTail = os.path.split(sourcePathAbs)
-    outputPath = "processed_" + sourceFolderTail + "_" + now
-    targetFolder = sourceFolderHead + "/" + outputPath
+    sourcePathAbs = os.path.abspath(inputFilename)
+    sourceFileHead, sourceFileTail = os.path.split(sourcePathAbs)
+    outputPath = sourceFileTail + "_" + now
+    targetFolder = sourceFileHead + "/" + outputPath
     print("Files will be saved to folder ", targetFolder)
 
     try:
         os.mkdir(targetFolder)
         print("Directory ", targetFolder, " created")
     except FileExistsError:
-        print("Directory ", outputPath, " already exists...")
+        print("Directory ", targetFolder, " already exists...")
 
-    for filename in os.listdir(folderPath):
-        image_path = os.path.abspath(filename)
-        print("Processing source: ", image_path)
-        process(image_path, targetFolder)
+    with open(inputFilename, 'r') as f:
+        lines = f.readlines()
+
+    for line in lines:
+        print(line.split()[0] + " in " + targetFolder)
+        process(line.split()[0], targetFolder)
 
 def process(image_path, targetFolder):
     head, tail = os.path.split(image_path)
