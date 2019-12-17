@@ -64,7 +64,7 @@ image = Image.fromarray(image)
 exportName = "OUT-" + localFileName
 print("Done. Exporting image to ", exportName)
 
-savingFolder = Path("...\\output")
+savingFolder = "./output/"
 savingFolder.mkdir(exist_ok=True)
 filepath = (savingFolder / exportName)
 image.save(filepath)
