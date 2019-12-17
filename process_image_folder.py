@@ -56,11 +56,12 @@ def main():
     with open(inputFilename, 'r') as f:
         lines = f.readlines()
 
-    for line in lines:
-        print(line.split()[0] + " in " + targetFolder)
-        process(line.split()[0], targetFolder)
+    with tf.Session(graph=graph) as sess:
+        for line in lines:
+            print(line.split()[0] + " in " + targetFolder)
+            process(line.split()[0], targetFolder, sess)
 
-def process(image_path, targetFolder):
+def process(image_path, targetFolder, sess):
     head, tail = os.path.split(image_path)
     localFileName = tail
 
@@ -72,10 +73,9 @@ def process(image_path, targetFolder):
 
     return_tensors = utils.read_pb_return_tensors(graph, pb_file, return_elements)
 
-    with tf.Session(graph=graph) as sess:
-        pred_sbbox, pred_mbbox, pred_lbbox = sess.run(
-            [return_tensors[1], return_tensors[2], return_tensors[3]],
-            feed_dict={return_tensors[0]: image_data})
+    pred_sbbox, pred_mbbox, pred_lbbox = sess.run(
+        [return_tensors[1], return_tensors[2], return_tensors[3]],
+        feed_dict={return_tensors[0]: image_data})
 
     pred_bbox = np.concatenate([np.reshape(pred_sbbox, (-1, 5 + num_classes)),
                                 np.reshape(pred_mbbox, (-1, 5 + num_classes)),
@@ -86,7 +86,7 @@ def process(image_path, targetFolder):
     image = utils.draw_bbox(original_image, bboxes)
     image = Image.fromarray(image)
 
-    exportName = "OUT-" + localFileName
+    exportName = "out_" + localFileName
 
     filepath = targetFolder + "/" + exportName
     print("Done. Exporting image to ", filepath)
