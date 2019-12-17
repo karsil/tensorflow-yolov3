@@ -64,6 +64,8 @@ def main():
         for line in tqdm(lines):
             process(line.split()[0], targetFolder, sess, return_tensors)
 
+    print(f"Done! {len(lines)} files have been saved to folder ", targetFolder)
+
 def process(image_path, targetFolder, sess,  return_tensors):
     head, tail = os.path.split(image_path)
     localFileName = tail
@@ -90,8 +92,6 @@ def process(image_path, targetFolder, sess,  return_tensors):
     exportName = "out_" + localFileName
 
     filepath = targetFolder + "/" + exportName
-    print("Done. Exporting image to ", filepath)
-
     image.save(filepath)
 
 if __name__ == "__main__":
