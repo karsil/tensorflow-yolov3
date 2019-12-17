@@ -4,8 +4,8 @@
 #   Copyright (C) 2018 * Ltd. All rights reserved.
 #
 #   Editor      : pyCharm
-#   File name   : process_vide_batcho.py
-#   Author      : karsil
+#   File name   : process_image_folder.py
+#   Author      : YunYang1994, karsil
 #   Created date: 2019-12-17 15:10:14
 #   Description :
 #
@@ -26,7 +26,6 @@ pb_file         = "./yolov3_fish.pb"
 num_classes     = 2
 input_size      = 416
 graph           = tf.Graph()
-outputPath      = Path("...\\output")
 
 def main():
     parser = argparse.ArgumentParser()
@@ -39,6 +38,12 @@ def main():
         print(f"The folder {folderPath} does not exist. Quitting...")
         sys.exit()
 
+    sourcePathAbs = os.path.abspath(folderPath)
+    sourceFolderHead, sourceFolderTail = os.path.split(absPath)
+    outputPath = "processed_" + sourceFolderTail
+    targetFolder = sourceFolderHead + outputPath
+    print("Files will be saved to folder ", targetFolder)
+
     if not os.path.exists(outputPath):
         print(f"The folder {outputPath} does not exist. Creating...")
         outputPath.mkdir(exist_ok=True)
@@ -46,9 +51,9 @@ def main():
     for filename in os.listdir(folderPath):
         image_path = os.path.abspath(filename)
         print("Processing source: ", image_path)
-        process(image_path)
+        process(image_path, targetFolder)
 
-def process(image_path):
+def process(image_path, targetFolder):
     head, tail = os.path.split(image_path)
     localFileName = tail
 
@@ -75,9 +80,10 @@ def process(image_path):
     image = Image.fromarray(image)
 
     exportName = "OUT-" + localFileName
-    print("Done. Exporting image to ", exportName)
 
-    filepath = str(exportName / exportName)
+    filepath = targetFolder + exportName
+    print("Done. Exporting image to ", filepath)
+
     image.save(filepath)
 
 if __name__ == "__main__":
