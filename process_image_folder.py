@@ -39,7 +39,7 @@ def main():
         sys.exit()
 
 
-    now = datetime.now().strftime('%Y-%m-%d_H:%M:%S')
+    now = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
 
     sourcePathAbs = os.path.abspath(folderPath)
     sourceFolderHead, sourceFolderTail = os.path.split(sourcePathAbs)
