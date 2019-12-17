@@ -20,6 +20,7 @@ import sys
 import os
 import argparse
 from datetime import datetime
+from tqdm import tqdm
 
 return_elements = ["input/input_data:0", "pred_sbbox/concat_2:0", "pred_mbbox/concat_2:0", "pred_lbbox/concat_2:0"]
 pb_file         = "./yolov3_fish.pb"
@@ -56,8 +57,9 @@ def main():
     with open(inputFilename, 'r') as f:
         lines = f.readlines()
 
+
     with tf.Session(graph=graph) as sess:
-        for line in lines:
+        for line in tqdm(lines):
             process(line.split()[0], targetFolder, sess)
 
 def process(image_path, targetFolder, sess):
