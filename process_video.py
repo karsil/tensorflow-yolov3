@@ -46,8 +46,11 @@ with tf.Session(graph=graph) as sess:
     w = int(vid.get(3))
     h = int(vid.get(4))
 
+    head, tail = os.path.split(video_path)
+    outputfileName = "out_" + tail
+
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = cv2.VideoWriter('output.avi',fourcc, 29, (w,h))
+    out = cv2.VideoWriter(outputfileName, fourcc, 29, (w,h))
    
     # frames
     i = 1
