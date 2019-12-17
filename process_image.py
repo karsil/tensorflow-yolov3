@@ -18,6 +18,7 @@ import tensorflow as tf
 from PIL import Image
 import os
 import sys
+from pathlib import Path
 
 return_elements = ["input/input_data:0", "pred_sbbox/concat_2:0", "pred_mbbox/concat_2:0", "pred_lbbox/concat_2:0"]
 pb_file         = "./yolov3_fish.pb"
@@ -62,7 +63,11 @@ image = Image.fromarray(image)
 
 exportName = "OUT-" + localFileName
 print("Done. Exporting image to ", exportName)
-image.save(exportName)
+
+savingFolder = Path("...\\output")
+savingFolder.mkdir(exist_ok=True)
+filepath = (savingFolder / exportName)
+image.save(filepath)
 
 
 
