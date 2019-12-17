@@ -88,7 +88,7 @@ def process(image_path, targetFolder):
 
     exportName = "OUT-" + localFileName
 
-    filepath = targetFolder + exportName
+    filepath = targetFolder + "/" + exportName
     print("Done. Exporting image to ", filepath)
 
     image.save(filepath)
