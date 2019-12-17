@@ -59,10 +59,12 @@ def main():
 
 
     with tf.Session(graph=graph) as sess:
-        for line in tqdm(lines):
-            process(line.split()[0], targetFolder, sess)
+        return_tensors = utils.read_pb_return_tensors(graph, pb_file, return_elements)
 
-def process(image_path, targetFolder, sess):
+        for line in tqdm(lines):
+            process(line.split()[0], targetFolder, sess, return_tensors)
+
+def process(image_path, targetFolder, sess,  return_tensors):
     head, tail = os.path.split(image_path)
     localFileName = tail
 
@@ -71,8 +73,6 @@ def process(image_path, targetFolder, sess):
     original_image_size = original_image.shape[:2]
     image_data = utils.image_preporcess(np.copy(original_image), [input_size, input_size])
     image_data = image_data[np.newaxis, ...]
-
-    return_tensors = utils.read_pb_return_tensors(graph, pb_file, return_elements)
 
     pred_sbbox, pred_mbbox, pred_lbbox = sess.run(
         [return_tensors[1], return_tensors[2], return_tensors[3]],
