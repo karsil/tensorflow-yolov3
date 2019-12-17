@@ -19,7 +19,7 @@ from PIL import Image
 import sys
 import os
 import argparse
-from pathlib import Path
+from datetime import datetime
 
 return_elements = ["input/input_data:0", "pred_sbbox/concat_2:0", "pred_mbbox/concat_2:0", "pred_lbbox/concat_2:0"]
 pb_file         = "./yolov3_fish.pb"
@@ -38,15 +38,20 @@ def main():
         print(f"The folder {folderPath} does not exist. Quitting...")
         sys.exit()
 
+
+    now = datetime.now().strftime('%Y-%m-%d_H:%M:%S')
+
     sourcePathAbs = os.path.abspath(folderPath)
-    sourceFolderHead, sourceFolderTail = os.path.split(absPath)
-    outputPath = "processed_" + sourceFolderTail
-    targetFolder = sourceFolderHead + outputPath
+    sourceFolderHead, sourceFolderTail = os.path.split(sourcePathAbs)
+    outputPath = "processed_" + sourceFolderTail + "_" + now
+    targetFolder = sourceFolderHead + "/" + outputPath
     print("Files will be saved to folder ", targetFolder)
 
-    if not os.path.exists(outputPath):
-        print(f"The folder {outputPath} does not exist. Creating...")
-        outputPath.mkdir(exist_ok=True)
+    try:
+        os.mkdir(targetFolder)
+        print("Directory ", targetFolder, " created")
+    except FileExistsError:
+        print("Directory ", outputPath, " already exists...")
 
     for filename in os.listdir(folderPath):
         image_path = os.path.abspath(filename)
