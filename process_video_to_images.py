@@ -69,13 +69,14 @@ def run(inputFile, srtData, targetFolder):
 
         maxFrames = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
 
+        print(f"Begin processing of video with {maxFrames} frames...")
+
         # frames
         currFrame = 0
 
         # progressbar
         pbar = tqdm(total=maxFrames)
-
-        print(f"Begin processing of video with {maxFrames} frames...")
+        
         while (vid.isOpened()):
             ret, frame = vid.read()
             if ret:
@@ -114,6 +115,16 @@ def run(inputFile, srtData, targetFolder):
                 image = Image.fromarray(image)
                 exportName = srtData[currFrame].content
                 filepath = targetFolder + "/" + exportName + ".jpg"
+                
+                # Save logfile for image
+                # Format: TopleftX, TopleftY, BottomRightX, BottomRightY, Class ID
+                filepathLog = targetFolder + "/" + exportName + ".txt"
+                with open(filepathLog, "w") as logfile:
+                    for i, bbox in enumerate(bboxes):
+                        coor = np.array(bbox[:4], dtype=np.int32)
+                        class_ind = int(bbox[5])
+                        logfile.write(str(coor[0]) + ", " + str(coor[1]) + ", " + str(coor[2]) + ", " + str(coor[3]) + ", " + str(class_ind) + "\n")
+
                 image.save(filepath)
 
             pbar.update(1)
@@ -141,4 +152,3 @@ def createTargetFolder(inputFile):
 
 if __name__ == "__main__":
     main()
-
