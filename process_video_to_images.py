@@ -24,12 +24,13 @@ from datetime import datetime
 import srt
 from tqdm import tqdm
 
-return_elements = ["input/input_data:0", "pred_sbbox/concat_2:0", "pred_mbbox/concat_2:0", "pred_lbbox/concat_2:0"]
-pb_file = "./yolov3_fish.pb"
-num_classes = 2
-input_size = 416
-graph = tf.Graph()
-return_tensors = utils.read_pb_return_tensors(graph, pb_file, return_elements)
+return_elements  = ["input/input_data:0", "pred_sbbox/concat_2:0", "pred_mbbox/concat_2:0", "pred_lbbox/concat_2:0"]
+pb_file          = "./yolov3_fish.pb"
+num_classes      = 2
+input_size       = 416
+score_threshold  = 0.3
+graph            = tf.Graph()
+return_tensors   = utils.read_pb_return_tensors(graph, pb_file, return_elements)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -103,8 +104,8 @@ def run(inputFile, srtData, targetFolder):
             pred_bbox = np.concatenate([np.reshape(pred_sbbox, (-1, 5 + num_classes)),
                                         np.reshape(pred_mbbox, (-1, 5 + num_classes)),
                                         np.reshape(pred_lbbox, (-1, 5 + num_classes))], axis=0)
-
-            bboxes = utils.postprocess_boxes(pred_bbox, frame_size, input_size, 0.3)
+            
+            bboxes = utils.postprocess_boxes(pred_bbox, frame_size, input_size, score_treshold)
             bboxes = utils.nms(bboxes, 0.45, method='nms')
 
             #  When detection has been observed, save image

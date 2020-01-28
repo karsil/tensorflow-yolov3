@@ -26,6 +26,7 @@ return_elements = ["input/input_data:0", "pred_sbbox/concat_2:0", "pred_mbbox/co
 pb_file         = "./yolov3_fish.pb"
 num_classes     = 2
 input_size      = 416
+score_threshold = 0.3
 graph           = tf.Graph()
 
 def main():
@@ -84,7 +85,7 @@ def process(image_path, targetFolder, sess,  return_tensors):
                                 np.reshape(pred_mbbox, (-1, 5 + num_classes)),
                                 np.reshape(pred_lbbox, (-1, 5 + num_classes))], axis=0)
 
-    bboxes = utils.postprocess_boxes(pred_bbox, original_image_size, input_size, 0.3)
+    bboxes = utils.postprocess_boxes(pred_bbox, original_image_size, input_size, score_threshold)
     bboxes = utils.nms(bboxes, 0.45, method='nms')
     image = utils.draw_bbox(original_image, bboxes)
     image = Image.fromarray(image)

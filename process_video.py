@@ -63,7 +63,7 @@ with tf.Session(graph=graph) as sess:
             image = Image.fromarray(frame)
         else:
             if(i > 1):
-                # end of video file
+                print("Done. Quitting...")
                 break;
             else:
                 raise ValueError("No image!", frame)
