@@ -124,7 +124,7 @@ def run(inputFile, srtData, targetFolder):
                     for i, bbox in enumerate(bboxes):
                         coor = np.array(bbox[:4], dtype=np.int32)
                         class_ind = int(bbox[5])
-                        logfile.write(str(coor[0]) + ", " + str(coor[1]) + ", " + str(coor[2]) + ", " + str(coor[3]) + ", " + str(class_ind) + "\n")
+                        logfile.write(str(coor[0]) + " " + str(coor[1]) + " " + str(coor[2]) + " " + str(coor[3]) + " " + str(class_ind) + "\n")
 
                 image.save(filepath)
 
