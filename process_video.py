@@ -19,6 +19,7 @@ import tensorflow as tf
 from PIL import Image
 import os
 import sys
+from tqdm import tqdm
 
 return_elements = ["input/input_data:0", "pred_sbbox/concat_2:0", "pred_mbbox/concat_2:0", "pred_lbbox/concat_2:0"]
 pb_file         = "./yolov3_fish.pb"
@@ -53,21 +54,25 @@ with tf.Session(graph=graph) as sess:
     out = cv2.VideoWriter(outputfileName, fourcc, 29, (w,h))
    
     # frames
-    i = 1
+    maxFrames = int(vid.get(cv2.CAP_PROP_FRAME_COUNT))
+    currFrame = 0
+
+    # progressbar
+    pbar = tqdm(total=maxFrames)
 
     while(vid.isOpened()):
-        print("Processing frame ", i)
         ret, frame = vid.read()
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             image = Image.fromarray(frame)
         else:
-            if(i > 1):
+            if (currFrame > 0):
+                # something has been processed earlier
                 print("Done. Quitting...")
-                break;
+                break
             else:
                 raise ValueError("No image!", frame)
-        i = i + 1
+
         frame_size = frame.shape[:2]
         image_data = utils.image_preporcess(np.copy(frame), [input_size, input_size])
         image_data = image_data[np.newaxis, ...]
@@ -94,6 +99,8 @@ with tf.Session(graph=graph) as sess:
         out.write(result)
         #cv2.imshow("result", result)
         #if cv2.waitKey(1) & 0xFF == ord('q'): break
+        pbar.update(1)
+        currFrame = currFrame + 1
 
 vid.release()
 out.release()
