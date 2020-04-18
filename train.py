@@ -165,7 +165,8 @@ class YoloTrain(object):
 
             pbar_test = tqdm(self.testset)
             for test_data in pbar_test:
-                summary, test_step_loss, global_step_val = self.sess.run( [self.write_op, self.loss, self.global_step], feed_dict={
+                _, summary, test_step_loss, global_step_val = self.sess.run(
+                    [train_op, self.write_op, self.loss, self.global_step], feed_dict={
                                                 self.input_data:   test_data[0],
                                                 self.label_sbbox:  test_data[1],
                                                 self.label_mbbox:  test_data[2],
