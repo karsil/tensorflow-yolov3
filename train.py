@@ -162,7 +162,6 @@ class YoloTrain(object):
                 train_epoch_loss.append(train_step_loss)
                 pbar.set_description("train loss: %.2f" %train_step_loss)
 
-            train_epoch_loss = np.mean(train_epoch_loss)
             self.summary_writer_train.add_summary(summary, epoch)
             self.summary_writer_train.flush()
 
@@ -180,8 +179,9 @@ class YoloTrain(object):
                 })
 
                 test_epoch_loss.append(test_step_loss)
-                pbar.set_description("test loss: %.2f" %test_epoch_loss)
+                pbar.set_description("test loss: %.2f" %test_step_loss)
 
+            train_epoch_loss = np.mean(train_epoch_loss)
             test_epoch_loss = np.mean(test_epoch_loss)
             
             self.summary_writer_eval.add_summary(summary, epoch)
