@@ -177,8 +177,8 @@ class YoloTrain(object):
                 })
 
                 test_epoch_loss.append(test_step_loss)
-                self.summary_writer_test.add_summary(summary, global_step_val)
-                self.summary_writer_test.flush()
+                self.summary_writer_eval.add_summary(summary, global_step_val)
+                self.summary_writer_eval.flush()
                 pbar_test.set_description("test loss: %.2f" %test_step_loss)
 
             train_epoch_loss, test_epoch_loss = np.mean(train_epoch_loss), np.mean(test_epoch_loss)
