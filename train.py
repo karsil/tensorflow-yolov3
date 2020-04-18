@@ -165,7 +165,8 @@ class YoloTrain(object):
             self.summary_writer_train.add_summary(summary, epoch)
             self.summary_writer_train.flush()
 
-            for test_data in self.testset:
+            pbar = tqdm(self.trainset)
+            for test_data in pbar:
                 summary, test_step_loss = self.sess.run( [self.write_op, self.loss], feed_dict={
                                                 self.input_data:   test_data[0],
                                                 self.label_sbbox:  test_data[1],
@@ -178,7 +179,7 @@ class YoloTrain(object):
                 })
 
                 test_epoch_loss.append(test_step_loss)
-
+                pbar.set_description("test loss: %.2f" %test_epoch_loss)
 
             test_epoch_loss = np.mean(test_epoch_loss)
             
