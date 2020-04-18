@@ -119,7 +119,11 @@ class YoloTrain(object):
             if os.path.exists(logdir): shutil.rmtree(logdir)
             os.mkdir(logdir)
             self.write_op = tf.summary.merge_all()
-            self.summary_writer  = tf.summary.FileWriter(logdir, graph=self.sess.graph)
+            self.summary_writer_train  = tf.summary.FileWriter(logdir, graph=self.sess.graph)
+
+            self.logdir_eval = os.path.join(logdir, "eval")
+            os.mkdir(self.logdir_eval)
+            self.summary_writer_eval = tf.summary.FileWriter(self.logdir_eval, graph=self.sess.graph)
 
 
     def train(self):
@@ -138,10 +142,10 @@ class YoloTrain(object):
             else:
                 train_op = self.train_op_with_all_variables
 
-            pbar = tqdm(self.trainset)
+            pbar_train = tqdm(self.trainset)
             train_epoch_loss, test_epoch_loss = [], []
 
-            for train_data in pbar:
+            for train_data in pbar_train:
                 _, summary, train_step_loss, global_step_val = self.sess.run(
                     [train_op, self.write_op, self.loss, self.global_step],feed_dict={
                                                 self.input_data:   train_data[0],
@@ -155,11 +159,13 @@ class YoloTrain(object):
                 })
 
                 train_epoch_loss.append(train_step_loss)
-                self.summary_writer.add_summary(summary, global_step_val)
-                pbar.set_description("train loss: %.2f" %train_step_loss)
+                self.summary_writer_train.add_summary(summary, global_step_val)
+                self.summary_writer_train.flush()
+                pbar_train.set_description("train loss: %.2f" %train_step_loss)
 
-            for test_data in self.testset:
-                test_step_loss = self.sess.run( self.loss, feed_dict={
+            pbar_test = tqdm(self.testset)
+            for test_data in pbar_test:
+                summary, test_step_loss, global_step_val = self.sess.run( [self.write_op, self.loss, self.global_step], feed_dict={
                                                 self.input_data:   test_data[0],
                                                 self.label_sbbox:  test_data[1],
                                                 self.label_mbbox:  test_data[2],
@@ -171,6 +177,9 @@ class YoloTrain(object):
                 })
 
                 test_epoch_loss.append(test_step_loss)
+                self.summary_writer_test.add_summary(summary, global_step_val)
+                self.summary_writer_test.flush()
+                pbar_test.set_description("test loss: %.2f" %test_step_loss)
 
             train_epoch_loss, test_epoch_loss = np.mean(train_epoch_loss), np.mean(test_epoch_loss)
             ckpt_file = "./checkpoint/yolov3_test_loss=%.4f.ckpt" % test_epoch_loss
