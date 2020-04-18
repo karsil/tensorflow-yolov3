@@ -121,9 +121,9 @@ class YoloTrain(object):
             self.write_op = tf.summary.merge_all()
             self.summary_writer_train  = tf.summary.FileWriter(logdir, graph=self.sess.graph)
 
-            logdir_eval = os.path.join(logdir, "eval")
-            os.mkdir(logdir_eval)
-            self.summary_writer_eval = tf.summary.FileWriter(logdir_eval, graph=self.sess.graph)
+            self.logdir_eval = os.path.join(logdir, "eval")
+            os.mkdir(self.logdir_eval)
+            self.summary_writer_eval = tf.summary.FileWriter(self.logdir_eval, graph=self.sess.graph)
 
 
     def train(self):
@@ -185,6 +185,16 @@ class YoloTrain(object):
             
             self.summary_writer_eval.add_summary(summary, epoch)
             self.summary_writer_eval.flush()
+
+            # Creates a file writer for the log directory.
+            image_writer = tf.summary.create_file_writer(self.logdir_eval)
+            
+            # Using the file writer, log the reshaped image.
+            with image_writer.as_default():
+                images = np.reshape(self.trainset[0:25][0], (-1, 1024, 1280, 1))
+                tf.summary.image("25 test data examples", images, max_outputs=25, step=epoch)
+
+
             
             ckpt_file = "./checkpoint/yolov3_test_loss=%.4f.ckpt" % test_epoch_loss
             log_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
