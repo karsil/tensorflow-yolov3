@@ -43,7 +43,7 @@ class YoloTrain(object):
         self.testset             = Dataset('test')
         self.steps_per_period    = len(self.trainset)
         self.sess                = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
-        self.output_dir          = cfg.YOLO.TRAIN.OUTPUT_FOLDER
+        self.output_dir          = cfg.TRAIN.OUTPUT_FOLDER
 
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
