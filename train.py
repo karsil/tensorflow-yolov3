@@ -186,48 +186,6 @@ class YoloTrain(object):
             
             self.summary_writer_eval.add_summary(summary, epoch)
             self.summary_writer_eval.flush()
-
-            # Show evaluation images
-            image_writer = tf.summary.create_file_writer(self.logdir_eval)
-            
-            return_tensors = utils.read_pb_return_tensors(graph, pb_file, return_elements)
-
-            images = []
-            input_size = 416
-            score_threshold = 0.3
-            for image in self.testset[0:25]:
-                original_image = cv2.imread(image[0])
-                original_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2RGB)
-                original_image_size = original_image.shape[:2]
-                img = Image
-                image_data = utils.image_preporcess(np.copy(image[0]), [input_size, input_size])
-                image_data = image_data[np.newaxis, ...]
-
-                pred_sbbox, pred_mbbox, pred_lbbox = self.sess.run([
-                    return_tensors[1],
-                    return_tensors[2],
-                    return_tensors[3]],
-                    feed_dict={ 
-                        return_tensors[0]: image_data
-                        })
-
-                pred_bbox = np.concatenate([np.reshape(pred_sbbox, (-1, 5 + num_classes)),
-                    np.reshape(pred_mbbox, (-1, 5 + num_classes)),
-                    np.reshape(pred_lbbox, (-1, 5 + num_classes))],
-                    axis=0
-                    )
-
-                bboxes = utils.postprocess_boxes(pred_bbox, original_image_size, input_size, score_threshold)
-                bboxes = utils.nms(bboxes, 0.45, method='nms')
-                img = utils.draw_bbox(original_image, bboxes)
-                images.append(Image.fromarray(image))
-
-
-            # Using the file writer, log the reshaped image.
-            with image_writer.as_default():
-                images_arr = np.reshape(images, (-1, 1024, 1280, 1))
-                tf.summary.image("25 test data examples", images_arr, max_outputs=25, step=epoch)
-
             
             ckpt_file = "./checkpoint/yolov3_test_loss=%.4f.ckpt" % test_epoch_loss
             log_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
