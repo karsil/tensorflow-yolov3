@@ -43,6 +43,10 @@ class YoloTrain(object):
         self.testset             = Dataset('test')
         self.steps_per_period    = len(self.trainset)
         self.sess                = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
+        self.output_dir          = cfg.YOLO.TRAIN.OUTPUT_FOLDER
+
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
 
         with tf.name_scope('define_input'):
             self.input_data   = tf.placeholder(dtype=tf.float32, name='input_data')
@@ -192,7 +196,7 @@ class YoloTrain(object):
             train_epoch_loss = np.mean(train_epoch_loss)
             test_epoch_loss = np.mean(test_epoch_loss)
 
-            ckpt_file = "./checkpoint/yolov3_test_loss=%.4f.ckpt" % test_epoch_loss
+            ckpt_file = self.output_dir + "/yolov3_test_loss=%.4f.ckpt" % test_epoch_loss
             log_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             print("=> Epoch: %2d Time: %s Train loss: %.2f Test loss: %.2f Saving %s ..."
                             %(epoch, log_time, train_epoch_loss, test_epoch_loss, ckpt_file))
@@ -255,8 +259,8 @@ class YoloTrain(object):
             
             train_epoch_loss = np.mean(train_epoch_loss)
             test_epoch_loss = np.mean(test_epoch_loss)
-
-            ckpt_file = "./checkpoint/yolov3_test_loss=%.4f.ckpt" % test_epoch_loss
+            
+            ckpt_file = self.output_dir + "/yolov3_test_loss=%.4f.ckpt" % test_epoch_loss
             log_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             print("=> Epoch: %2d Time: %s Train loss: %.2f Test loss: %.2f Saving %s ..."
                             %(epoch, log_time, train_epoch_loss, test_epoch_loss, ckpt_file))

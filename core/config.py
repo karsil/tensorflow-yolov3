@@ -46,7 +46,7 @@ __C.TRAIN.WARMUP_EPOCHS         = 2
 __C.TRAIN.FISRT_STAGE_EPOCHS    = 20
 __C.TRAIN.SECOND_STAGE_EPOCHS   = 30
 __C.TRAIN.INITIAL_WEIGHT        = "./checkpoint/yolov3_coco_demo.ckpt"
-
+__C.TRAIN.OUTPUT_FOLDER         = "./checkpoint_coco_plus_ufo" 
 
 
 # TEST options
