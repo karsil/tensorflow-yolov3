@@ -107,7 +107,9 @@ class YoloTrain(object):
 
         with tf.name_scope('loader_and_saver'):
             self.loader = tf.train.Saver(self.net_var)
-            self.saver  = tf.train.Saver(tf.global_variables(), max_to_keep=10)
+
+            # setted to max epoch to make sure, all ckpts are available when selecting the best performanting 
+            self.saver  = tf.train.Saver(tf.global_variables(), max_to_keep=self.first_stage_epochs)
 
         with tf.name_scope('summary'):
             tf.summary.scalar("learn_rate",      self.learn_rate)
@@ -137,11 +139,14 @@ class YoloTrain(object):
             print('=> Now it starts to train YOLOV3 from scratch ...')
             self.first_stage_epochs = 0
 
-        for epoch in range(1, 1+self.first_stage_epochs+self.second_stage_epochs):
-            if epoch <= self.first_stage_epochs:
-                train_op = self.train_op_with_frozen_variables
-            else:
-                train_op = self.train_op_with_all_variables
+        print("Training YOLOv3 - First stage")
+
+        # Train first stage and keep track of best checkpoint
+        best_performance_ckpt = ""
+        best_performance_test_loss = float("inf")
+
+        for epoch in range(1, 1 + self.first_stage_epochs):
+            train_op = self.train_op_with_frozen_variables
 
             pbar = tqdm(self.trainset)
             train_epoch_loss, test_epoch_loss = [], []
@@ -165,7 +170,7 @@ class YoloTrain(object):
             self.summary_writer_train.add_summary(summary, epoch)
             self.summary_writer_train.flush()
 
-            pbar = tqdm(self.trainset)
+            pbar = tqdm(self.testset)
             for test_data in pbar:
                 summary, test_step_loss = self.sess.run( [self.write_op, self.loss], feed_dict={
                                                 self.input_data:   test_data[0],
@@ -181,20 +186,83 @@ class YoloTrain(object):
                 test_epoch_loss.append(test_step_loss)
                 pbar.set_description("test loss: %.2f" %test_step_loss)
 
-            train_epoch_loss = np.mean(train_epoch_loss)
-            test_epoch_loss = np.mean(test_epoch_loss)
-            
             self.summary_writer_eval.add_summary(summary, epoch)
             self.summary_writer_eval.flush()
             
+            train_epoch_loss = np.mean(train_epoch_loss)
+            test_epoch_loss = np.mean(test_epoch_loss)
+
             ckpt_file = "./checkpoint/yolov3_test_loss=%.4f.ckpt" % test_epoch_loss
             log_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             print("=> Epoch: %2d Time: %s Train loss: %.2f Test loss: %.2f Saving %s ..."
                             %(epoch, log_time, train_epoch_loss, test_epoch_loss, ckpt_file))
+            
             self.saver.save(self.sess, ckpt_file, global_step=epoch)
+            if test_epoch_loss < best_performance_test_loss:
+                best_performance_test_loss = test_epoch_loss
+                best_performance_ckpt = ckpt_file
 
+        print(f"Done with first stage after {self.first_stage_epochs} epochs")
+        print(f"Best test loss of {best_performance_test_loss} had checkpoint {best_performance_ckpt}")
+        print("Using this for second stage training!")
+        print('=> Restoring weights from: %s ... ' % best_performance_ckpt)
+        self.loader.restore(self.sess, best_performance_ckpt)
 
+        print("Training YOLOv3 - Second stage")
+        for epoch in range(1 + self.first_stage_epochs, 1 + self.first_stage_epochs + self.second_stage_epochs):
+            train_op = self.train_op_with_all_variables
+            
+            pbar = tqdm(self.trainset)
+            train_epoch_loss, test_epoch_loss = [], []
 
+            for train_data in pbar:
+                _, summary, train_step_loss, global_step_val = self.sess.run(
+                    [train_op, self.write_op, self.loss, self.global_step],feed_dict={
+                                                self.input_data:   train_data[0],
+                                                self.label_sbbox:  train_data[1],
+                                                self.label_mbbox:  train_data[2],
+                                                self.label_lbbox:  train_data[3],
+                                                self.true_sbboxes: train_data[4],
+                                                self.true_mbboxes: train_data[5],
+                                                self.true_lbboxes: train_data[6],
+                                                self.trainable:    True,
+                })
+
+                train_epoch_loss.append(train_step_loss)
+                pbar.set_description("train loss: %.2f" %train_step_loss)
+
+            self.summary_writer_train.add_summary(summary, epoch)
+            self.summary_writer_train.flush()
+
+            pbar = tqdm(self.testset)
+            for test_data in pbar:
+                summary, test_step_loss = self.sess.run( [self.write_op, self.loss], feed_dict={
+                                                self.input_data:   test_data[0],
+                                                self.label_sbbox:  test_data[1],
+                                                self.label_mbbox:  test_data[2],
+                                                self.label_lbbox:  test_data[3],
+                                                self.true_sbboxes: test_data[4],
+                                                self.true_mbboxes: test_data[5],
+                                                self.true_lbboxes: test_data[6],
+                                                self.trainable:    False,
+                })
+
+                test_epoch_loss.append(test_step_loss)
+                pbar.set_description("test loss: %.2f" %test_step_loss)
+
+            self.summary_writer_eval.add_summary(summary, epoch)
+            self.summary_writer_eval.flush()
+            
+            train_epoch_loss = np.mean(train_epoch_loss)
+            test_epoch_loss = np.mean(test_epoch_loss)
+
+            ckpt_file = "./checkpoint/yolov3_test_loss=%.4f.ckpt" % test_epoch_loss
+            log_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
+            print("=> Epoch: %2d Time: %s Train loss: %.2f Test loss: %.2f Saving %s ..."
+                            %(epoch, log_time, train_epoch_loss, test_epoch_loss, ckpt_file))
+            
+            self.saver.save(self.sess, ckpt_file, global_step=epoch)
+                            
 if __name__ == '__main__': YoloTrain().train()
 
 
