@@ -18,11 +18,9 @@ import numpy as np
 import tensorflow as tf
 import core.utils as utils
 from tqdm import tqdm
-from PIL import Image
 from core.dataset import Dataset
 from core.yolov3 import YOLOV3
 from core.config import cfg
-
 
 class YoloTrain(object):
     def __init__(self):
