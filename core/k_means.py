@@ -6,6 +6,7 @@ from sklearn.cluster import KMeans
 from config import cfg
 
 label_path = cfg.YOLO.TRAIN.ANNOT_PATH
+cluster_path = "../data/anchors/ufo_anchors.txt"
 n_anchors = 9
 loss_convergence = 1e-6
 grid_size = 13
@@ -37,6 +38,11 @@ def get_pixel_differences_from_coords(data):
         box_sizes.append([x_size, y_size])
     return box_sizes
 
+def sort_by_area(coords):
+    def area(c):
+        return c[0] * c[1]
+    return sorted(coords, key=area)
+
 annotations = load_bboxes(label_path)
 boxes = []
 for annotation in annotations:
@@ -53,12 +59,11 @@ clusters = np.around(k_means.cluster_centers_)
 print(f"Got {str(n_anchors)} anchors, which are (rounded):")
 print(clusters)
 
-# TODO: Sorting in small, medium, large
+sorted_clusters = sort_by_area(clusters)
 
-with open("../data/anchors/ufo_anchors.txt", "w") as f:
-    print(len(clusters))
+with open(cluster_path, "w") as f:
+    print(len(sorted_clusters))
     for i, cluster in enumerate(clusters):
-        print(i)
         clusterToString = str(int(cluster[0])) + "," + str(int(cluster[1]))
         if i+1 < len(clusters):
             clusterToString += ", "
