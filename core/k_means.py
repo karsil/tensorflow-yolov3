@@ -114,7 +114,10 @@ def plot_clusters(clusters):
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.07),
             fancybox=True, shadow=True, ncol=5)
 
-    plt.savefig("docs/anchors.png")
+    figure_path = "docs/anchors.png"
+    print("Saving results to ", figure_path)
+
+    plt.savefig(figure_path)
     plt.show()
 
 annotations = load_bboxes(label_path)
