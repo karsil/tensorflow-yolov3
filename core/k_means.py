@@ -2,6 +2,10 @@
 # k-means ++ for anchor generation
 import numpy as np
 import os
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+from PIL import Image
+import numpy as np
 from sklearn.cluster import KMeans
 from config import cfg
 
@@ -45,6 +49,75 @@ def sort_by_area(coords):
         return c[0] * c[1]
     return sorted(coords, key=area)
 
+def get_clusters(boxes):
+    k_means = KMeans(n_clusters=n_anchors, max_iter=iterations_num, tol=loss_convergence)
+    k_means.fit(boxes)
+    clusters = np.around(k_means.cluster_centers_)
+    print(f"Got {str(n_anchors)} anchors, which are (rounded):")
+    print(clusters)
+    return cluster
+
+def save_clusters_to_file(sorted_clusters, filepath):
+    with open(filepath, "w") as f:
+        print(len(sorted_clusters))
+        for i, cluster in enumerate(sorted_clusters):
+            clusterToString = str(int(cluster[0])) + "," + str(int(cluster[1]))
+            if i+1 < len(clusters):
+                clusterToString += ", "
+            f.write(clusterToString)
+
+def plot_clusters(clusters):
+    largest_x = max(c[0] for c in clusters)
+    largest_y = max(c[1] for c in clusters)
+    offset = 50
+
+    im = np.zeros([largest_y + 2 * offset,largest_x + 2 * offset, 3], dtype=np.uint8)
+    im.fill(255)
+    height, width, _ = im.shape
+
+    fig,ax = plt.subplots(1)
+
+    ax.set_title("Anchors of UFO data by K-means clustering")
+    ax.imshow(im)
+
+    clusters = sort_by_area(clusters)
+
+    print("small")
+    for i, c in enumerate(clusters[:3]):
+        print(f" {c[0]} / {c[1]}")
+        x = width / 2 - (c[0]/2)
+        y = height / 2 - (c[1]/2)
+        rect = patches.Rectangle((x,y),c[0],c[1],linewidth=1,edgecolor='r',facecolor='none', label="Small" if i == 0 else "")
+        ax.add_patch(rect)
+        
+
+    print("medium")
+    for i, c in enumerate(clusters[3:6]):
+        print(f" {c[0]} / {c[1]}")
+        x = width / 2 - (c[0]/2)
+        y = height / 2 - (c[1]/2)
+        rect = patches.Rectangle((x,y),c[0],c[1],linewidth=1,edgecolor='b',facecolor='none', label="Medium" if i == 0 else "")
+        ax.add_patch(rect)
+
+    print("large")
+    for i, c in enumerate(clusters[6:9]):
+        print(f" {c[0]} / {c[1]}")
+        x = width / 2 - (c[0]/2)
+        y = height / 2 - (c[1]/2)
+        rect = patches.Rectangle((x,y),c[0],c[1],linewidth=1,edgecolor='g',facecolor='none', label="Large" if i == 0 else "")
+        ax.add_patch(rect)
+
+    box = ax.get_position()
+    ax.set_position([box.x0, box.y0 + box.height * 0.1,
+                    box.width, box.height * 0.9])
+
+    # Put a legend below current axis
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.07),
+            fancybox=True, shadow=True, ncol=5)
+
+    plt.savefig("anchors.png")
+    plt.show()
+
 annotations = load_bboxes(label_path)
 boxes = []
 for annotation in annotations:
@@ -55,18 +128,10 @@ for annotation in annotations:
 boxes = get_pixel_differences_from_coords(boxes)
 print(f"Got {len(boxes)} different bounding boxes, applying KMeans")
 
-k_means = KMeans(n_clusters=n_anchors, max_iter=iterations_num, tol=loss_convergence)
-k_means.fit(boxes)
-clusters = np.around(k_means.cluster_centers_)
-print(f"Got {str(n_anchors)} anchors, which are (rounded):")
-print(clusters)
+clusters = get_clusters(boxes)
 
 sorted_clusters = sort_by_area(clusters)
 
-with open(cluster_path, "w") as f:
-    print(len(sorted_clusters))
-    for i, cluster in enumerate(clusters):
-        clusterToString = str(int(cluster[0])) + "," + str(int(cluster[1]))
-        if i+1 < len(clusters):
-            clusterToString += ", "
-        f.write(clusterToString)
+save_clusters_to_file(sorted_clusters, cluster_path)
+
+plot_clusters(sorted_clusters)
