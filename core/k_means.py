@@ -55,11 +55,10 @@ def get_clusters(boxes):
     clusters = np.around(k_means.cluster_centers_)
     print(f"Got {str(n_anchors)} anchors, which are (rounded):")
     print(clusters)
-    return cluster
+    return clusters
 
 def save_clusters_to_file(sorted_clusters, filepath):
     with open(filepath, "w") as f:
-        print(len(sorted_clusters))
         for i, cluster in enumerate(sorted_clusters):
             clusterToString = str(int(cluster[0])) + "," + str(int(cluster[1]))
             if i+1 < len(clusters):
@@ -67,8 +66,8 @@ def save_clusters_to_file(sorted_clusters, filepath):
             f.write(clusterToString)
 
 def plot_clusters(clusters):
-    largest_x = max(c[0] for c in clusters)
-    largest_y = max(c[1] for c in clusters)
+    largest_x = int(max(c[0] for c in clusters))
+    largest_y = int(max(c[1] for c in clusters))
     offset = 50
 
     im = np.zeros([largest_y + 2 * offset,largest_x + 2 * offset, 3], dtype=np.uint8)
@@ -115,7 +114,7 @@ def plot_clusters(clusters):
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.07),
             fancybox=True, shadow=True, ncol=5)
 
-    plt.savefig("anchors.png")
+    plt.savefig("docs/anchors.png")
     plt.show()
 
 annotations = load_bboxes(label_path)
