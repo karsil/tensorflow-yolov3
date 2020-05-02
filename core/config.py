@@ -30,8 +30,8 @@ __C.YOLO.STRIDES                = [8, 16, 32]
 __C.YOLO.ANCHOR_PER_SCALE       = 3
 __C.YOLO.IOU_LOSS_THRESH        = 0.5
 __C.YOLO.UPSAMPLE_METHOD        = "resize"
-__C.YOLO.ORIGINAL_WEIGHT        = "./checkpoint/yolov3_coco.ckpt"
-__C.YOLO.DEMO_WEIGHT            = "./checkpoint/yolov3_coco_demo.ckpt"
+__C.YOLO.ORIGINAL_WEIGHT        = "./checkpoint_coco/yolov3_coco.ckpt"
+__C.YOLO.DEMO_WEIGHT            = "./checkpoint_coco/yolov3_coco_demo.ckpt"
 
 # Train options
 __C.TRAIN                       = edict()
@@ -45,7 +45,7 @@ __C.TRAIN.LEARN_RATE_END        = 1e-6
 __C.TRAIN.WARMUP_EPOCHS         = 2
 __C.TRAIN.FISRT_STAGE_EPOCHS    = 20
 __C.TRAIN.SECOND_STAGE_EPOCHS   = 30
-__C.TRAIN.INITIAL_WEIGHT        = "./checkpoint/yolov3_coco_demo.ckpt"
+__C.TRAIN.INITIAL_WEIGHT        = "./checkpoint_coco/yolov3_coco_demo.ckpt"
 __C.TRAIN.OUTPUT_FOLDER         = "./checkpoint_coco_plus_ufo" 
 
 
