@@ -5,7 +5,7 @@ import os
 from sklearn.cluster import KMeans
 from config import cfg
 
-label_path = cfg.YOLO.TRAIN.ANNOT_PATH
+label_path = cfg.TRAIN.ANNOT_PATH
 cluster_path = "../data/anchors/ufo_anchors.txt"
 n_anchors = 9
 loss_convergence = 1e-6
