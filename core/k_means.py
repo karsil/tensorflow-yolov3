@@ -5,8 +5,10 @@ import os
 from sklearn.cluster import KMeans
 from config import cfg
 
+# Note: Call from project dir, not from inside core/
+
 label_path = cfg.TRAIN.ANNOT_PATH
-cluster_path = "../data/anchors/ufo_anchors.txt"
+cluster_path = "./data/anchors/ufo_anchors.txt"
 n_anchors = 9
 loss_convergence = 1e-6
 grid_size = 13
