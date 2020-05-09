@@ -22,6 +22,8 @@ from core.dataset import Dataset
 from core.yolov3 import YOLOV3
 from core.config import cfg
 
+logdir = "./data/log/"
+
 class YoloTrain(object):
     def __init__(self):
         self.anchor_per_scale    = cfg.YOLO.ANCHOR_PER_SCALE
@@ -54,7 +56,7 @@ class YoloTrain(object):
             self.true_sbboxes = tf.placeholder(dtype=tf.float32, name='sbboxes')
             self.true_mbboxes = tf.placeholder(dtype=tf.float32, name='mbboxes')
             self.true_lbboxes = tf.placeholder(dtype=tf.float32, name='lbboxes')
-            self.trainable     = tf.placeholder(dtype=tf.bool, name='training')
+            self.trainable    = tf.placeholder(dtype=tf.bool, name='training')
 
         with tf.name_scope("define_loss"):
             self.model = YOLOV3(self.input_data, self.trainable)
@@ -120,9 +122,6 @@ class YoloTrain(object):
             tf.summary.scalar("prob_loss",  self.prob_loss)
             tf.summary.scalar("total_loss", self.loss)
 
-            logdir = "./data/log/"
-            if os.path.exists(logdir): shutil.rmtree(logdir)
-            os.mkdir(logdir)
             self.write_op = tf.summary.merge_all()
             self.summary_writer_train  = tf.summary.FileWriter(logdir, graph=self.sess.graph)
 
@@ -130,8 +129,7 @@ class YoloTrain(object):
             os.mkdir(self.logdir_eval)
             self.summary_writer_eval = tf.summary.FileWriter(self.logdir_eval, graph=self.sess.graph)
 
-
-    def train(self):
+    def train_first_stage(self):
         self.sess.run(tf.global_variables_initializer())
         try:
             print('=> Restoring weights from: %s ... ' % self.initial_weight)
@@ -147,9 +145,10 @@ class YoloTrain(object):
         best_performance_ckpt = ""
         best_performance_test_loss = float("inf")
 
-        for epoch in range(1, 1 + self.first_stage_epochs):
-            train_op = self.train_op_with_frozen_variables
+        train_op = self.train_op_with_frozen_variables
 
+        for epoch in range(1, 1 + self.first_stage_epochs):
+            
             pbar = tqdm(self.trainset)
             train_epoch_loss, test_epoch_loss = [], []
 
@@ -207,12 +206,22 @@ class YoloTrain(object):
         print(f"Done with first stage after {self.first_stage_epochs} epochs")
         print(f"Best test loss of {best_performance_test_loss} had checkpoint {best_performance_ckpt}")
         print("Using this for second stage training!")
+
+    def train_second_stage(self, best_performance_ckpt):
+        self.sess.run(tf.global_variables_initializer())
+
         print('=> Restoring weights from: %s ... ' % best_performance_ckpt)
         self.loader.restore(self.sess, best_performance_ckpt)
 
+        # Train stage and keep track of best checkpoint
+        best_performance_ckpt = ""
+        best_performance_test_loss = float("inf")
+
         print("Training YOLOv3 - Second stage")
+
+        train_op = self.train_op_with_all_variables
+
         for epoch in range(1 + self.first_stage_epochs, 1 + self.first_stage_epochs + self.second_stage_epochs):
-            train_op = self.train_op_with_all_variables
             
             pbar = tqdm(self.trainset)
             train_epoch_loss, test_epoch_loss = [], []
@@ -271,8 +280,14 @@ class YoloTrain(object):
 
         print(f"Done with second stage after {self.first_stage_epochs} epochs")
         print(f"Best test loss of {best_performance_test_loss} had checkpoint {best_performance_ckpt}")
+
                             
-if __name__ == '__main__': YoloTrain().train()
+if __name__ == '__main__':
+    if os.path.exists(logdir): shutil.rmtree(logdir)
+    os.mkdir(logdir)
+
+    best_ckpt = YoloTrain().train_first_stage()
+    YoloTrain().train_second_stage(best_performance_ckpt=best_ckpt)
 
 
 
