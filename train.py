@@ -264,6 +264,13 @@ class YoloTrain(object):
                             %(epoch, log_time, train_epoch_loss, test_epoch_loss, ckpt_file))
             
             self.saver.save(self.sess, ckpt_file, global_step=epoch)
+
+            if test_epoch_loss < best_performance_test_loss:
+                best_performance_test_loss = test_epoch_loss
+                best_performance_ckpt = ckpt_file + "-" + str(epoch)
+
+        print(f"Done with second stage after {self.first_stage_epochs} epochs")
+        print(f"Best test loss of {best_performance_test_loss} had checkpoint {best_performance_ckpt}")
                             
 if __name__ == '__main__': YoloTrain().train()
 
