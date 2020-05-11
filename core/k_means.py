@@ -4,20 +4,15 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from PIL import Image
-import numpy as np
-from sklearn.cluster import KMeans
 from config import cfg
+
+from kmeans_utils import kmeans, avg_iou
 
 # Note: Call from project dir, not from inside core/
 
 label_path = cfg.TRAIN.ANNOT_PATH
 cluster_path = "./data/anchors/ufo_anchors.txt"
 n_anchors = 9
-loss_convergence = 1e-6
-grid_size = 13
-iterations_num = 100
-plus = 0
 
 def load_bboxes(annotation_file):
     annotations = []
@@ -42,26 +37,18 @@ def get_pixel_differences_from_coords(data):
         x_size = (xmax - xmin) 
         y_size = (ymax - ymin) 
         box_sizes.append([x_size, y_size])
-    return box_sizes
+    return np.array(box_sizes)
 
 def sort_by_area(coords):
     def area(c):
         return c[0] * c[1]
-    return sorted(coords, key=area)
-
-def get_clusters(boxes):
-    k_means = KMeans(n_clusters=n_anchors, max_iter=iterations_num, tol=loss_convergence)
-    k_means.fit(boxes)
-    clusters = np.around(k_means.cluster_centers_)
-    print(f"Got {str(n_anchors)} anchors, which are (rounded):")
-    print(clusters)
-    return clusters
+    return np.array(sorted(coords, key=area))
 
 def save_clusters_to_file(sorted_clusters, filepath):
     with open(filepath, "w") as f:
         for i, cluster in enumerate(sorted_clusters):
             clusterToString = str(int(cluster[0])) + "," + str(int(cluster[1]))
-            if i+1 < len(clusters):
+            if i+1 < len(sorted_clusters):
                 clusterToString += ", "
             f.write(clusterToString)
 
@@ -76,7 +63,7 @@ def plot_clusters(clusters):
 
     fig,ax = plt.subplots(1)
 
-    ax.set_title("Anchors of UFO data by K-means clustering")
+    ax.set_title("Anchors of UFO data by K-means clustering based on IoU")
     ax.imshow(im)
 
     clusters = sort_by_area(clusters)
@@ -130,9 +117,13 @@ for annotation in annotations:
 boxes = get_pixel_differences_from_coords(boxes)
 print(f"Got {len(boxes)} different bounding boxes, applying KMeans")
 
-clusters = get_clusters(boxes)
+out = kmeans(boxes, k=n_anchors)
+sorted_clusters = sort_by_area(out)
+print("Accuracy: {:.6f}%".format(avg_iou(boxes, sorted_clusters)))
+print("Boxes:\n {}".format(sorted_clusters))
 
-sorted_clusters = sort_by_area(clusters)
+ratios = np.around(sorted_clusters[:, 0] / sorted_clusters[:, 1], decimals=2).tolist()
+print("Ratios:\n {}".format(sorted(ratios)))
 
 save_clusters_to_file(sorted_clusters, cluster_path)
 
