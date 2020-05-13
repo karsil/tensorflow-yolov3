@@ -296,6 +296,7 @@ if __name__ == '__main__':
 
     if stage is 1:
         if os.path.exists(logdir): shutil.rmtree(logdir)
+        os.mkdir(logdir)
         logdir = logdir + "stage1/"
         os.mkdir(logdir)
         YoloTrain().train_first_stage()
