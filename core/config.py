@@ -47,7 +47,8 @@ __C.TRAIN.FISRT_STAGE_EPOCHS    = 20
 __C.TRAIN.SECOND_STAGE_EPOCHS   = 30
 __C.TRAIN.INITIAL_WEIGHT        = "./checkpoint_coco/yolov3_coco_demo.ckpt"
 __C.TRAIN.OUTPUT_FOLDER         = "./checkpoint_coco_plus_ufo" 
-
+__C.TRAIN.STAGE_1_WEIGHT        = cfg.TRAIN.OUTPUT_FOLDER + "/yolov3_coco_ufo_S1"
+__C.TRAIN.STAGE_2_WEIGHT        = cfg.TRAIN.OUTPUT_FOLDER + "/yolov3_coco_ufo_S2"
 
 # TEST options
 __C.TEST                        = edict()
