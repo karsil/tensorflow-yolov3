@@ -195,7 +195,7 @@ class YoloTrain(object):
             train_epoch_loss = np.mean(train_epoch_loss)
             test_epoch_loss = np.mean(test_epoch_loss)
             
-            ckpt_file = self.output_dir + self.stage_1_ckpt + "_test_loss=%.4f.ckpt" % test_epoch_loss
+            ckpt_file = self.stage_1_ckpt + "_test_loss=%.4f.ckpt" % test_epoch_loss
             log_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             print("=> Epoch: %2d Time: %s Train loss: %.2f Test loss: %.2f Saving %s ..."
                             %(epoch, log_time, train_epoch_loss, test_epoch_loss, ckpt_file))
@@ -268,7 +268,7 @@ class YoloTrain(object):
             train_epoch_loss = np.mean(train_epoch_loss)
             test_epoch_loss = np.mean(test_epoch_loss)
             
-            ckpt_file = self.output_dir + self.stage_2_ckpt + "_test_loss=%.4f.ckpt" % test_epoch_loss
+            ckpt_file = self.stage_2_ckpt + "_test_loss=%.4f.ckpt" % test_epoch_loss
             log_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             print("=> Epoch: %2d Time: %s Train loss: %.2f Test loss: %.2f Saving %s ..."
                             %(epoch, log_time, train_epoch_loss, test_epoch_loss, ckpt_file))
