@@ -285,9 +285,9 @@ class YoloTrain(object):
                             
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("stage", type=int,
+    parser.add_argument("-s", "--stage", type=int,
                     help="Select the stage which shall be trained ('1' or '2')")
-    parser.add_argument("ckpt", type=str,
+    parser.add_argument("-c", "--ckpt", type=str,
                     help="Select the ckpt file which shall be trained in the second stage!")
     args = parser.parse_args()
 
