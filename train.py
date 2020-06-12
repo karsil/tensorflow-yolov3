@@ -73,8 +73,16 @@ class YoloTrain(object):
             self.global_step = tf.Variable(1.0, dtype=tf.float64, trainable=False, name='global_step')
             warmup_steps = tf.constant(self.warmup_periods * self.steps_per_period,
                                         dtype=tf.float64, name='warmup_steps')
+
             train_steps = tf.constant( (self.first_stage_epochs + self.second_stage_epochs)* self.steps_per_period,
-                                        dtype=tf.float64, name='train_steps')
+            # for stage 1
+            train_steps = tf.constant( self.first_stage_epochs * self.steps_per_period,
+                                         dtype=tf.float64, name='train_steps')
+            
+            if self.stage == 2:
+                tf.assign(self.global_step, warmup_steps)
+                train_steps = tf.constant( self.second_stage_epochs * self.steps_per_period, dtype=tf.float64, name='train_steps')
+
             self.learn_rate = tf.cond(
                 pred=self.global_step < warmup_steps,
                 true_fn=lambda: self.global_step / warmup_steps * self.learn_rate_init,
@@ -115,7 +123,7 @@ class YoloTrain(object):
         with tf.name_scope('loader_and_saver'):
             self.loader = tf.train.Saver(self.net_var)
 
-            self.saver  = tf.train.Saver(tf.global_variables(), max_to_keep=10)
+            self.saver  = tf.train.Saver(tf.global_variables(), max_to_keep=30)
 
         with tf.name_scope('summary'):
             tf.summary.scalar("learn_rate",      self.learn_rate)
@@ -222,7 +230,7 @@ class YoloTrain(object):
 
         train_op = self.train_op_with_all_variables
 
-        for epoch in range(1 + self.first_stage_epochs, 1 + self.first_stage_epochs + self.second_stage_epochs):
+        for epoch in range(1, 1 + self.second_stage_epochs):
             
             pbar = tqdm(self.trainset)
             train_epoch_loss, test_epoch_loss = [], []
