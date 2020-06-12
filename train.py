@@ -26,7 +26,8 @@ from core.config import cfg
 logdir = "./data/log/"
 
 class YoloTrain(object):
-    def __init__(self):
+    def __init__(self, stage):
+        self.stage               = stage
         self.anchor_per_scale    = cfg.YOLO.ANCHOR_PER_SCALE
         self.classes             = utils.read_class_names(cfg.YOLO.CLASSES)
         self.num_classes         = len(self.classes)
@@ -305,12 +306,12 @@ if __name__ == '__main__':
         os.mkdir(logdir)
         logdir = logdir + "stage1/"
         os.mkdir(logdir)
-        YoloTrain().train_first_stage()
+        YoloTrain(1).train_first_stage()
     elif stage is 2:
         logdir = logdir + "stage2/"
         if os.path.exists(logdir): shutil.rmtree(logdir)
         os.mkdir(logdir)
         assert first_stage_ckpt is not None, "You want to train for second stage, but no ckpt is given!"
-        YoloTrain().train_second_stage(first_stage_ckpt)
+        YoloTrain(2).train_second_stage(first_stage_ckpt)
     else:
         print(f"Stage {stage} not valid (must be 1 or 2), exiting...")
