@@ -143,6 +143,7 @@ class YoloTrain(object):
         try:
             print('=> Restoring weights from: %s ... ' % self.initial_weight)
             self.loader.restore(self.sess, self.initial_weight)
+            print('=> Success! Now it starts to train YOLOV3 from checkpoint...')
         except:
             print('=> %s does not exist !!!' % self.initial_weight)
             print('=> Now it starts to train YOLOV3 from scratch ...')
