@@ -146,7 +146,6 @@ class YoloTrain(object):
         except:
             print('=> %s does not exist !!!' % self.initial_weight)
             print('=> Now it starts to train YOLOV3 from scratch ...')
-            self.first_stage_epochs = 0
 
         print("Training YOLOv3 - First stage")
 
