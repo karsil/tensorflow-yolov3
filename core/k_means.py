@@ -19,11 +19,17 @@ def load_bboxes(annotation_file):
     with open(annotation_file, 'r') as f:
         txt = f.readlines()
 
+    TUPEL_LEN = 5
     for line in txt:
         bbox_tupels = line.strip().split()[1:]
         if len(bbox_tupels) != 0:
             stripped = line.strip()
-            annotations.append(stripped)
+            assert len(stripped) % TUPEL_LEN == 0
+
+            i = 0
+            while i < len(stripped):
+                annotations.append(stripped[i : i + TUPEL_LEN])
+                i = i + TUPEL_LEN
     return annotations
 
 def parse_annotation(annotation):
