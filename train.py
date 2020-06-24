@@ -76,7 +76,7 @@ class YoloTrain(object):
                                         dtype=tf.float64, name='warmup_steps')
 
             if self.stage == 1:
-            train_steps = tf.constant( self.first_stage_epochs * self.steps_per_period, dtype=tf.float64, name='train_steps')
+                train_steps = tf.constant( self.first_stage_epochs * self.steps_per_period, dtype=tf.float64, name='train_steps')
             else:
                 # for stage 2
                 train_steps = tf.constant( self.second_stage_epochs * self.steps_per_period, dtype=tf.float64, name='train_steps')
@@ -159,6 +159,7 @@ class YoloTrain(object):
             
             pbar = tqdm(self.trainset)
             train_epoch_loss, test_epoch_loss = [], []
+            summaries = []
 
             for train_data in pbar:
                 _, summary, train_step_loss, global_step_val = self.sess.run(
@@ -174,7 +175,16 @@ class YoloTrain(object):
                 })
 
                 train_epoch_loss.append(train_step_loss)
+                print(summary)
+                summaries.append(summary)
                 pbar.set_description("train loss: %.2f" %train_step_loss)
+
+            # WIP
+            #mean_summary = np.mean(summaries)
+            #summary = tf.Summary()
+            #äsummary.value.add(tag="%sAccuracy" % prefix, simple_value=accuracy)
+            #self.summary_writer_train.add_summary(mean_summary, epoch)
+            # WIP End
 
             self.summary_writer_train.add_summary(summary, epoch)
             self.summary_writer_train.flush()
