@@ -18,12 +18,16 @@ import numpy as np
 import tensorflow as tf
 import core.utils as utils
 from tqdm import tqdm
+import argparse
 from core.dataset import Dataset
 from core.yolov3 import YOLOV3
 from core.config import cfg
 
+logdir = "./data/log/"
+
 class YoloTrain(object):
-    def __init__(self):
+    def __init__(self, stage):
+        self.stage               = stage
         self.anchor_per_scale    = cfg.YOLO.ANCHOR_PER_SCALE
         self.classes             = utils.read_class_names(cfg.YOLO.CLASSES)
         self.num_classes         = len(self.classes)
@@ -42,6 +46,8 @@ class YoloTrain(object):
         self.steps_per_period    = len(self.trainset)
         self.sess                = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
         self.output_dir          = cfg.TRAIN.OUTPUT_FOLDER
+        self.stage_1_ckpt        = cfg.TRAIN.STAGE_1_WEIGHT 
+        self.stage_2_ckpt        = cfg.TRAIN.STAGE_2_WEIGHT 
 
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
@@ -54,7 +60,7 @@ class YoloTrain(object):
             self.true_sbboxes = tf.placeholder(dtype=tf.float32, name='sbboxes')
             self.true_mbboxes = tf.placeholder(dtype=tf.float32, name='mbboxes')
             self.true_lbboxes = tf.placeholder(dtype=tf.float32, name='lbboxes')
-            self.trainable     = tf.placeholder(dtype=tf.bool, name='training')
+            self.trainable    = tf.placeholder(dtype=tf.bool, name='training')
 
         with tf.name_scope("define_loss"):
             self.model = YOLOV3(self.input_data, self.trainable)
@@ -68,8 +74,13 @@ class YoloTrain(object):
             self.global_step = tf.Variable(1.0, dtype=tf.float64, trainable=False, name='global_step')
             warmup_steps = tf.constant(self.warmup_periods * self.steps_per_period,
                                         dtype=tf.float64, name='warmup_steps')
-            train_steps = tf.constant( (self.first_stage_epochs + self.second_stage_epochs)* self.steps_per_period,
-                                        dtype=tf.float64, name='train_steps')
+
+            if self.stage == 1:
+            train_steps = tf.constant( self.first_stage_epochs * self.steps_per_period, dtype=tf.float64, name='train_steps')
+            else:
+                # for stage 2
+                train_steps = tf.constant( self.second_stage_epochs * self.steps_per_period, dtype=tf.float64, name='train_steps')
+
             self.learn_rate = tf.cond(
                 pred=self.global_step < warmup_steps,
                 true_fn=lambda: self.global_step / warmup_steps * self.learn_rate_init,
@@ -110,8 +121,7 @@ class YoloTrain(object):
         with tf.name_scope('loader_and_saver'):
             self.loader = tf.train.Saver(self.net_var)
 
-            # setted to max epoch to make sure, all ckpts are available when selecting the best performanting 
-            self.saver  = tf.train.Saver(tf.global_variables(), max_to_keep=self.first_stage_epochs)
+            self.saver  = tf.train.Saver(tf.global_variables(), max_to_keep=30)
 
         with tf.name_scope('summary'):
             tf.summary.scalar("learn_rate",      self.learn_rate)
@@ -120,9 +130,6 @@ class YoloTrain(object):
             tf.summary.scalar("prob_loss",  self.prob_loss)
             tf.summary.scalar("total_loss", self.loss)
 
-            logdir = "./data/log/"
-            if os.path.exists(logdir): shutil.rmtree(logdir)
-            os.mkdir(logdir)
             self.write_op = tf.summary.merge_all()
             self.summary_writer_train  = tf.summary.FileWriter(logdir, graph=self.sess.graph)
 
@@ -130,16 +137,15 @@ class YoloTrain(object):
             os.mkdir(self.logdir_eval)
             self.summary_writer_eval = tf.summary.FileWriter(self.logdir_eval, graph=self.sess.graph)
 
-
-    def train(self):
+    def train_first_stage(self):
         self.sess.run(tf.global_variables_initializer())
         try:
             print('=> Restoring weights from: %s ... ' % self.initial_weight)
             self.loader.restore(self.sess, self.initial_weight)
+            print('=> Success! Now it starts to train YOLOV3 from checkpoint...')
         except:
             print('=> %s does not exist !!!' % self.initial_weight)
             print('=> Now it starts to train YOLOV3 from scratch ...')
-            self.first_stage_epochs = 0
 
         print("Training YOLOv3 - First stage")
 
@@ -147,9 +153,10 @@ class YoloTrain(object):
         best_performance_ckpt = ""
         best_performance_test_loss = float("inf")
 
-        for epoch in range(1, 1 + self.first_stage_epochs):
-            train_op = self.train_op_with_frozen_variables
+        train_op = self.train_op_with_frozen_variables
 
+        for epoch in range(1, 1 + self.first_stage_epochs):
+            
             pbar = tqdm(self.trainset)
             train_epoch_loss, test_epoch_loss = [], []
 
@@ -193,8 +200,8 @@ class YoloTrain(object):
             
             train_epoch_loss = np.mean(train_epoch_loss)
             test_epoch_loss = np.mean(test_epoch_loss)
-
-            ckpt_file = self.output_dir + "/yolov3_test_loss=%.4f.ckpt" % test_epoch_loss
+            
+            ckpt_file = self.stage_1_ckpt + "_test_loss=%.4f.ckpt" % test_epoch_loss
             log_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             print("=> Epoch: %2d Time: %s Train loss: %.2f Test loss: %.2f Saving %s ..."
                             %(epoch, log_time, train_epoch_loss, test_epoch_loss, ckpt_file))
@@ -206,13 +213,22 @@ class YoloTrain(object):
 
         print(f"Done with first stage after {self.first_stage_epochs} epochs")
         print(f"Best test loss of {best_performance_test_loss} had checkpoint {best_performance_ckpt}")
-        print("Using this for second stage training!")
+
+    def train_second_stage(self, best_performance_ckpt):
+        self.sess.run(tf.global_variables_initializer())
+
         print('=> Restoring weights from: %s ... ' % best_performance_ckpt)
         self.loader.restore(self.sess, best_performance_ckpt)
 
+        # Train stage and keep track of best checkpoint
+        best_performance_ckpt = ""
+        best_performance_test_loss = float("inf")
+
         print("Training YOLOv3 - Second stage")
-        for epoch in range(1 + self.first_stage_epochs, 1 + self.first_stage_epochs + self.second_stage_epochs):
-            train_op = self.train_op_with_all_variables
+
+        train_op = self.train_op_with_all_variables
+
+        for epoch in range(1, 1 + self.second_stage_epochs):
             
             pbar = tqdm(self.trainset)
             train_epoch_loss, test_epoch_loss = [], []
@@ -258,7 +274,7 @@ class YoloTrain(object):
             train_epoch_loss = np.mean(train_epoch_loss)
             test_epoch_loss = np.mean(test_epoch_loss)
             
-            ckpt_file = self.output_dir + "/yolov3_test_loss=%.4f.ckpt" % test_epoch_loss
+            ckpt_file = self.stage_2_ckpt + "_test_loss=%.4f.ckpt" % test_epoch_loss
             log_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()))
             print("=> Epoch: %2d Time: %s Train loss: %.2f Test loss: %.2f Saving %s ..."
                             %(epoch, log_time, train_epoch_loss, test_epoch_loss, ckpt_file))
@@ -269,11 +285,32 @@ class YoloTrain(object):
                 best_performance_test_loss = test_epoch_loss
                 best_performance_ckpt = ckpt_file + "-" + str(epoch)
 
-        print(f"Done with second stage after {self.first_stage_epochs} epochs")
+        print(f"Done with second stage after {self.second_stage_epochs} epochs")
         print(f"Best test loss of {best_performance_test_loss} had checkpoint {best_performance_ckpt}")
+
                             
-if __name__ == '__main__': YoloTrain().train()
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-s", "--stage", type=int,
+                    help="Select the stage which shall be trained ('1' or '2')")
+    parser.add_argument("-c", "--ckpt", type=str,
+                    help="Select the ckpt file which shall be trained in the second stage!")
+    args = parser.parse_args()
 
+    stage = int(args.stage)
+    first_stage_ckpt = args.ckpt
 
-
-
+    if stage is 1:
+        if os.path.exists(logdir): shutil.rmtree(logdir)
+        os.mkdir(logdir)
+        logdir = logdir + "stage1/"
+        os.mkdir(logdir)
+        YoloTrain(1).train_first_stage()
+    elif stage is 2:
+        logdir = logdir + "stage2/"
+        if os.path.exists(logdir): shutil.rmtree(logdir)
+        os.mkdir(logdir)
+        assert first_stage_ckpt is not None, "You want to train for second stage, but no ckpt is given!"
+        YoloTrain(2).train_second_stage(first_stage_ckpt)
+    else:
+        print(f"Stage {stage} not valid (must be 1 or 2), exiting...")

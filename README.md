@@ -1,8 +1,6 @@
-# [TensorFlow2.0-Examples/4-Object_Detection/YOLOV3](https://github.com/YunYang1994/TensorFlow2.0-Examples/tree/master/4-Object_Detection/YOLOV3)
+# YOLOv3 Implementation with TF1
 
-## Please install tensorflow-gpu 1.11.0 !  Since Tensorflow is fucking ridiculous !
-
-## part 1. Introduction [[代码剖析]](https://github.com/YunYang1994/Easy-Deep-Learning/blob/master/YOLOv3.md)
+## Part 1. Introduction
 
 Implementation of YOLO v3 object detector in Tensorflow. The full details are in [this paper](https://pjreddie.com/media/files/papers/YOLOv3.pdf).  In this project we cover several segments as follows:<br>
 - [x] [YOLO v3 architecture](https://github.com/YunYang1994/tensorflow-yolov3/blob/master/core/yolov3.py)
@@ -14,18 +12,17 @@ Implementation of YOLO v3 object detector in Tensorflow. The full details are in
 
 YOLO paper is quick hard to understand, along side that paper. This repo enables you to have a quick understanding of YOLO Algorithmn.
 
-
-## part 2. Quick start
+## Part 2. Quick start
 1. Clone this file
 ```bashrc
-$ git clone https://github.com/YunYang1994/tensorflow-yolov3.git
+$ git clone https://github.com/karsil/tensorflow-yolov3.git
 ```
 2.  You are supposed  to install some dependencies before getting out hands with these codes.
 ```bashrc
 $ cd tensorflow-yolov3
 $ pip install -r ./docs/requirements.txt
 ```
-3. Exporting loaded COCO weights as TF checkpoint(`yolov3_coco.ckpt`)【[BaiduCloud](https://pan.baidu.com/s/11mwiUy8KotjUVQXqkGGPFQ&shfl=sharepset)】
+1. Exporting loaded COCO weights as TF checkpoint(`yolov3_coco.ckpt`)
 ```bashrc
 $ cd checkpoint
 $ wget https://github.com/YunYang1994/tensorflow-yolov3/releases/download/v1.0/yolov3_coco.tar.gz
@@ -39,8 +36,8 @@ $ python freeze_graph.py
 $ python image_demo.py
 $ python video_demo.py # if use camera, set video_path = 0
 ```
-![image](./docs/images/611_result.jpg)
-## part 3. Train your own dataset
+
+## Part 3. Train your own dataset
 Two files are required as follows:
 
 - [`dataset.txt`](https://raw.githubusercontent.com/YunYang1994/tensorflow-yolov3/master/data/dataset/voc_train.txt): 
@@ -128,18 +125,3 @@ $ wget http://images.cocodataset.org/annotations/annotations_trainval2017.zip
 $ wget http://images.cocodataset.org/zips/test2017.zip
 $ wget http://images.cocodataset.org/annotations/image_info_test2017.zip 
 ```
-
-## part 4. Other Implementations
-
-[-**`YOLOv3目标检测有了TensorFlow实现，可用自己的数据来训练`**](https://mp.weixin.qq.com/s/cq7g1-4oFTftLbmKcpi_aQ)<br>
-
-[-**`Stronger-yolo`**](https://github.com/Stinky-Tofu/Stronger-yolo)<br>
-
-[- **`Implementing YOLO v3 in Tensorflow (TF-Slim)`**](https://itnext.io/implementing-yolo-v3-in-tensorflow-tf-slim-c3c55ff59dbe)
-
-[- **`YOLOv3_TensorFlow`**](https://github.com/wizyoung/YOLOv3_TensorFlow)
-
-[- **`Object Detection using YOLOv2 on Pascal VOC2012`**](https://fairyonice.github.io/Part_1_Object_Detection_with_Yolo_for_VOC_2014_data_anchor_box_clustering.html)
-
-[-**`Understanding YOLO`**](https://hackernoon.com/understanding-yolo-f5a74bbc7967)
-
