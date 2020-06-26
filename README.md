@@ -92,11 +92,35 @@ $ cd mAP
 $ python main.py -na
 ```
 
-### 3.2 Train other dataset
-Download COCO trainval  and test data
+##### (3) Inference with trained model
+All scripts inside the root folder beginning with `process_` are meant for inference which are currently:
+```bashrc
+1. process_image.py
+2. process_image_folder.py
+3. process_video.py
+4. process_video_to_images.py
 ```
-$ wget http://images.cocodataset.org/zips/train2017.zip
-$ wget http://images.cocodataset.org/annotations/annotations_trainval2017.zip
-$ wget http://images.cocodataset.org/zips/test2017.zip
-$ wget http://images.cocodataset.org/annotations/image_info_test2017.zip 
+To improve performance during inference, all of those scripts require a frozen graph of the checkpoint.
+To to this, change the paths in `freeze_graph.py` like in the following to your own needs:
+```bashrc
+pb_file = "./yolov3_weights.pb"
+ckpt_file = "./checkpoint/yolov3_test_loss=0.8979.ckpt-30"
+```
+
+Afterwards run it:
+```bashrc
+python freeze_graph.py
+```
+
+Then make sure that the desired `process_` script has the correct parameters and the previous freezed graph path is correct:
+```bashrc
+pb_file         = "./yolov3_weights.pb"
+num_classes     = 4
+input_size      = 416
+score_threshold = 0.3
+```
+When calling the script, check for required parameters, e.g.:
+
+```bashrc
+python process_image_folder.py ./imagepaths.txt
 ```
