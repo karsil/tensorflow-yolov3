@@ -59,36 +59,12 @@ car
 toothbrush
 ```
 
-### 3.1 Train VOC dataset
-To help you understand my training process, I made this demo of training VOC PASCAL dataset
-#### how to train it ?
-Download VOC PASCAL trainval  and test data
-```bashrc
-$ wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar
-$ wget http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar
-$ wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar
-```
-Extract all of these tars into one directory and rename them, which should have the following basic structure.
-
-```bashrc
-
-VOC           # path:  /home/yang/dataset/VOC
-├── test
-|    └──VOCdevkit
-|        └──VOC2007 (from VOCtest_06-Nov-2007.tar)
-└── train
-     └──VOCdevkit
-         └──VOC2007 (from VOCtrainval_06-Nov-2007.tar)
-         └──VOC2012 (from VOCtrainval_11-May-2012.tar)
-                     
-$ python scripts/voc_annotation.py --data_path /home/yang/test/VOC
-```
 Then edit your `./core/config.py` to make some necessary configurations
 
 ```bashrc
-__C.YOLO.CLASSES                = "./data/classes/voc.names"
-__C.TRAIN.ANNOT_PATH            = "./data/dataset/voc_train.txt"
-__C.TEST.ANNOT_PATH             = "./data/dataset/voc_test.txt"
+__C.YOLO.CLASSES                = "./data/classes/dataset.names"
+__C.TRAIN.ANNOT_PATH            = "./data/dataset/train_dataset.txt"
+__C.TEST.ANNOT_PATH             = "./data/dataset/test_dataset.txt"
 ```
 Here are two kinds of training method: 
 
@@ -98,7 +74,7 @@ Here are two kinds of training method:
 $ python train.py
 $ tensorboard --logdir ./data
 ```
-##### (2) train from COCO weights(recommend):
+##### (2) train from COCO weights(recommended):
 
 ```bashrc
 $ cd checkpoint
@@ -115,7 +91,6 @@ $ python evaluate.py
 $ cd mAP
 $ python main.py -na
 ```
-if you are still unfamiliar with training pipline, you can join [here](https://github.com/YunYang1994/tensorflow-yolov3/issues/39) to discuss with us.
 
 ### 3.2 Train other dataset
 Download COCO trainval  and test data
