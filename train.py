@@ -121,7 +121,7 @@ class YoloTrain(object):
         with tf.name_scope('loader_and_saver'):
             self.loader = tf.train.Saver(self.net_var)
 
-            self.saver  = tf.train.Saver(tf.global_variables(), max_to_keep=30)
+            self.saver  = tf.train.Saver(tf.global_variables(), max_to_keep=20)
 
         with tf.name_scope('summary'):
             tf.summary.scalar("learn_rate",      self.learn_rate)
