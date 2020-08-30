@@ -61,7 +61,7 @@ def objective(trial):
 
         for epoch in range(EPOCHS):
             print("Training...")
-            model.optimize_hyperparameters(dataset = "train", isTrainable = True)
+            _ = model.optimize_hyperparameters(dataset = "train", isTrainable = True)
 
             print("Testing...")
             test_loss = model.optimize_hyperparameters(dataset = "test", isTrainable = False)
