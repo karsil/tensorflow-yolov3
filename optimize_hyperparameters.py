@@ -11,8 +11,8 @@ EPOCHS = 200
 if version.parse(tf.__version__) < version.parse("1.14.0"):
     raise RuntimeError("tensorflow>=1.14.0 is required for this example.")
 
-def create_model(trial, batch_size, optimizer):
-    return YoloTrain(2, hyperparameter_search = True, batch_size = batch_size, optimizer = optimizer)
+def create_model(trial, batch_size, optimizer, learning_rate):
+    return YoloTrain(2, hyperparameter_search = True, batch_size = batch_size, optimizer = optimizer, lr=learning_rate, epochs=EPOCHS)
 
 def create_optimizer(trial):
     kwargs = {}
