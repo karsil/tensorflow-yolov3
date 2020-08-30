@@ -23,12 +23,12 @@ from core.config import cfg
 
 class Dataset(object):
     """implement Dataset here"""
-    def __init__(self, dataset_type, batch_size = 0):
+    def __init__(self, dataset_type, batch_size = None):
         self.annot_path  = cfg.TRAIN.ANNOT_PATH if dataset_type == 'train' else cfg.TEST.ANNOT_PATH
         self.input_sizes = cfg.TRAIN.INPUT_SIZE if dataset_type == 'train' else cfg.TEST.INPUT_SIZE
         self.data_aug    = cfg.TRAIN.DATA_AUG   if dataset_type == 'train' else cfg.TEST.DATA_AUG
 
-        if batch_size is 0:
+        if batch_size is None:
             self.batch_size  = cfg.TRAIN.BATCH_SIZE if dataset_type == 'train' else cfg.TEST.BATCH_SIZE
         else:
             self.batch_size = batch_size
