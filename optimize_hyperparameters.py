@@ -50,6 +50,7 @@ def objective(trial):
     # Build model and optimizer.
     
     optimizer, learning_rate = create_optimizer(trial)
+    batch_size = trial.suggest_categorical("batch_size", [2, 4, 6])
 
     
     model = create_model(trial, batch_size, optimizer, learning_rate)
