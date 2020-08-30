@@ -26,15 +26,15 @@ from core.config import cfg
 logdir = "./data/log/"
 
 class YoloTrain(object):
-    def __init__(self, stage, hyperparameter_search = False, batch_size = 0, optimizer = None):
+    def __init__(self, stage, hyperparameter_search = False, batch_size = 0, optimizer = None, lr = None, epochs = None):
         self.stage               = stage
         self.anchor_per_scale    = cfg.YOLO.ANCHOR_PER_SCALE
         self.classes             = utils.read_class_names(cfg.YOLO.CLASSES)
         self.num_classes         = len(self.classes)
-        self.learn_rate_init     = cfg.TRAIN.LEARN_RATE_INIT
+        self.learn_rate_init     = cfg.TRAIN.LEARN_RATE_INIT if lr == None else lr
         self.learn_rate_end      = cfg.TRAIN.LEARN_RATE_END
         self.first_stage_epochs  = cfg.TRAIN.FISRT_STAGE_EPOCHS
-        self.second_stage_epochs = cfg.TRAIN.SECOND_STAGE_EPOCHS
+        self.second_stage_epochs = cfg.TRAIN.SECOND_STAGE_EPOCHS if epochs == None else epochs
         self.warmup_periods      = cfg.TRAIN.WARMUP_EPOCHS
         self.initial_weight      = cfg.TRAIN.INITIAL_WEIGHT
         self.time                = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time()))
@@ -42,7 +42,7 @@ class YoloTrain(object):
         self.max_bbox_per_scale  = 150
         self.train_logdir        = "./data/log/train"
         self.trainset            = Dataset('train', batch_size)
-        self.testset             = Dataset('test', batch_size = 0)
+        self.testset             = Dataset('test', batch_size = None)
         self.steps_per_period    = len(self.trainset)
         self.sess                = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
         self.output_dir          = cfg.TRAIN.OUTPUT_FOLDER

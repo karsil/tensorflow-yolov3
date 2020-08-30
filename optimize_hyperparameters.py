@@ -40,7 +40,7 @@ def create_optimizer(trial):
 
     optimizer = getattr(tf.compat.v1.train, optimizer_selected)(**kwargs)
 
-    return optimizer
+    return optimizer, kwargs["learning_rate"]
 
 
 # FYI: Objective functions can take additional arguments
@@ -49,11 +49,10 @@ def objective(trial):
 
     # Build model and optimizer.
     
-    optimizer = create_optimizer(trial)
-    batch_size = trial.suggest_categorical("batch_size", [4, 6, 8])
+    optimizer, learning_rate = create_optimizer(trial)
 
     
-    model = create_model(trial, batch_size, optimizer)
+    model = create_model(trial, batch_size, optimizer, learning_rate)
     
     isPruned = False
     with tf.device("/cpu:0"):
