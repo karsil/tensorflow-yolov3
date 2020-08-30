@@ -174,8 +174,12 @@ class YoloTrain(object):
             pbar = tqdm(self.trainset)
         
         epoch_loss = []
+
+        # train stage 2
+        train_op = self.train_op_with_all_variables
+
         for batch in pbar:
-            step_loss = self.sess.run( self.loss, feed_dict={
+            _, step_loss = self.sess.run( [train_op, self.loss], feed_dict={
                                             self.input_data:   batch[0],
                                             self.label_sbbox:  batch[1],
                                             self.label_mbbox:  batch[2],
