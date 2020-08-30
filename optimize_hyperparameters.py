@@ -59,6 +59,8 @@ def objective(trial):
     with tf.device("/cpu:0"):
         model.initialize_session(pretrained_ckpt)
 
+        test_loss = None
+        epoch = None
         for epoch in range(EPOCHS):
             print("Training...")
             _ = model.optimize_hyperparameters(dataset = "train", isTrainable = True)
