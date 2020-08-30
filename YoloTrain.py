@@ -165,6 +165,11 @@ class YoloTrain(object):
             else:
                 print('=> Now it starts to train YOLOV3 from scratch ...')
 
+    def save_model_as_ckpt(self, test_loss, epoch):
+        ckpt_file = self.stage_2_ckpt + "_test_loss=%.4f.ckpt" % loss
+        self.saver.save(self.sess, ckpt_file, global_step=epoch)
+        print("Saved to: {}".format(ckpt_file))
+
     def optimize_hyperparameters(self, dataset = "test", isTrainable = False):
         assert dataset in ["test", "train"]
 

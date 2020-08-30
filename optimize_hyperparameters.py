@@ -71,6 +71,8 @@ def objective(trial):
                 isPruned = True
                 break
                 
+        model = model.save_model_as_ckpt(test_loss, epoch)
+                
     # TODO Replace with solution to start model without re-initializing the whole graph
     tf.compat.v1.reset_default_graph()
 
