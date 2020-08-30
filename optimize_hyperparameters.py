@@ -16,18 +16,25 @@ def create_model(trial, batch_size, optimizer):
 
 def create_optimizer(trial):
     kwargs = {}
-    optimizer_options = ['AdamOptimizer', 'MomentumOptimizer']
+    optimizer_options = ['AdamOptimizer', 'RMSPropOptimizer', 'MomentumOptimizer']
     optimizer_selected = trial.suggest_categorical("optimizer", optimizer_options)
     if optimizer_selected == "AdamOptimizer":
-        kwargs["learning_rate"] = trial.suggest_uniform("adam_learning_rate", 1e-7, 1e-3)
-        kwargs["beta1"] = trial.suggest_uniform("beta1", 0.9, 0.999)
-        kwargs["beta2"] = trial.suggest_uniform("beta2", 0.99, 0.9999)
-        kwargs["epsilon"] = trial.suggest_uniform("epsilon", 1e-8, 1e-9,)
+        kwargs["learning_rate"] = trial.suggest_float("adam_learning_rate", 1e-7, 1e-3)
+        kwargs["beta1"] = trial.suggest_float("beta1", 0.9, 0.999)
+        kwargs["beta2"] = trial.suggest_float("beta2", 0.99, 0.9999)
+        kwargs["epsilon"] = trial.suggest_float("epsilon", 1e-9, 1e-7)
+    elif optimizer_selected == "RMSPropOptimizer":
+        kwargs["learning_rate"] = trial.suggest_float(
+            "rms_learning_rate", 1e-7, 1e-3
+        )
+        kwargs["decay"] = trial.suggest_float("rms_decay", 0.8, 0.999)
+        kwargs["epsilon"] = trial.suggest_float("rms_epsilon", 1e-11, 1e-7)
+        kwargs["momentum"] = 0.0
     elif optimizer_selected == "MomentumOptimizer":
         kwargs["learning_rate"] = trial.suggest_float(
-            "sgd_opt_learning_rate", 1e-7, 1e-3, log = True
+            "sgd_opt_learning_rate", 1e-7, 1e-3
         )
-        kwargs["momentum"] = trial.suggest_float("sgd_opt_momentum", 1e-5, 1e-1, log =True)
+        kwargs["momentum"] = trial.suggest_float("sgd_opt_momentum", 1e-5, 1e-1)
     else:
         assert False, "ERROR: Got {} as optimizer".format(optimizer_selected)
 
