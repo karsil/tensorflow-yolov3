@@ -6,7 +6,7 @@ from optuna.samplers import TPESampler
 from train import YoloTrain
 
 pretrained_ckpt = "/home/jsteeg/tensorflow-yolov3/training2020/08-09y1/best/yolov3_coco_ufo_S1_test_loss=4.7399.ckpt-9"
-EPOCHS = 2
+EPOCHS = 200
 
 if version.parse(tf.__version__) < version.parse("1.14.0"):
     raise RuntimeError("tensorflow>=1.14.0 is required for this example.")
