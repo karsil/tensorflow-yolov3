@@ -137,7 +137,7 @@ class YoloTrain(object):
                         self.train_op_with_frozen_variables = tf.no_op()
 
         with tf.name_scope("define_second_stage_train"):
-            self.second_stage_trainable_var_list = tf.trainable_variables()
+            self.second_stage_trainable_var_list = tf.compat.v1.trainable_variables()
 
             if optimizer_with_lr == None:
                 optimizer_with_lr = tf.train.AdamOptimizer(self.learn_rate)
