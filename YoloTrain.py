@@ -44,7 +44,7 @@ class YoloTrain(object):
         self.trainset            = Dataset('train', batch_size)
         self.testset             = Dataset('test', batch_size = None)
         self.steps_per_period    = len(self.trainset)
-        self.sess                = tf.Session(config=tf.ConfigProto(allow_soft_placement=True))
+        self.sess                = tf.compat.v1.Session(config=tf.compat.v1.ConfigProto(allow_soft_placement=True))
         self.output_dir          = cfg.TRAIN.OUTPUT_FOLDER
         self.stage_1_ckpt        = cfg.TRAIN.STAGE_1_WEIGHT 
         self.stage_2_ckpt        = cfg.TRAIN.STAGE_2_WEIGHT 
@@ -53,18 +53,18 @@ class YoloTrain(object):
             os.makedirs(self.output_dir)
 
         with tf.name_scope('define_input'):
-            self.input_data   = tf.placeholder(dtype=tf.float32, name='input_data')
-            self.label_sbbox  = tf.placeholder(dtype=tf.float32, name='label_sbbox')
-            self.label_mbbox  = tf.placeholder(dtype=tf.float32, name='label_mbbox')
-            self.label_lbbox  = tf.placeholder(dtype=tf.float32, name='label_lbbox')
-            self.true_sbboxes = tf.placeholder(dtype=tf.float32, name='sbboxes')
-            self.true_mbboxes = tf.placeholder(dtype=tf.float32, name='mbboxes')
-            self.true_lbboxes = tf.placeholder(dtype=tf.float32, name='lbboxes')
-            self.trainable    = tf.placeholder(dtype=tf.bool, name='training')
+            self.input_data   = tf.compat.v1.placeholder(dtype=tf.float32, name='input_data')
+            self.label_sbbox  = tf.compat.v1.placeholder(dtype=tf.float32, name='label_sbbox')
+            self.label_mbbox  = tf.compat.v1.placeholder(dtype=tf.float32, name='label_mbbox')
+            self.label_lbbox  = tf.compat.v1.placeholder(dtype=tf.float32, name='label_lbbox')
+            self.true_sbboxes = tf.compat.v1.placeholder(dtype=tf.float32, name='sbboxes')
+            self.true_mbboxes = tf.compat.v1.placeholder(dtype=tf.float32, name='mbboxes')
+            self.true_lbboxes = tf.compat.v1.placeholder(dtype=tf.float32, name='lbboxes')
+            self.trainable    = tf.compat.v1.placeholder(dtype=tf.bool, name='training')
 
         with tf.name_scope("define_loss"):
             self.model = YOLOV3(self.input_data, self.trainable)
-            self.net_var = tf.global_variables()
+            self.net_var = tf.compat.v1.global_variables()
             self.giou_loss, self.conf_loss, self.prob_loss = self.model.compute_loss(
                                                     self.label_sbbox,  self.label_mbbox,  self.label_lbbox,
                                                     self.true_sbboxes, self.true_mbboxes, self.true_lbboxes)
@@ -73,9 +73,9 @@ class YoloTrain(object):
         self.set_optimizer(optimizer)
 
         with tf.name_scope('loader_and_saver'):
-            self.loader = tf.train.Saver(self.net_var)
+            self.loader = tf.compat.v1.train.Saver(self.net_var)
 
-            self.saver  = tf.train.Saver(tf.global_variables(), max_to_keep=20)
+            self.saver  = tf.compat.v1.train.Saver(tf.global_variables(), max_to_keep=20)
 
         if hyperparameter_search == False:
             with tf.name_scope('summary'):
@@ -112,10 +112,10 @@ class YoloTrain(object):
                                     (1 + tf.cos(
                                         (self.global_step - warmup_steps) / (train_steps - warmup_steps) * np.pi))
             )
-            global_step_update = tf.assign_add(self.global_step, 1.0)
+            global_step_update = tf.compat.v1.assign_add(self.global_step, 1.0)
 
         with tf.name_scope("define_weight_decay"):
-            moving_ave = tf.train.ExponentialMovingAverage(self.moving_ave_decay).apply(tf.trainable_variables())
+            moving_ave = tf.train.ExponentialMovingAverage(self.moving_ave_decay).apply(tf.compat.v1.trainable_variables())
 
         with tf.name_scope("define_first_stage_train"):
             self.first_stage_trainable_var_list = []
@@ -131,7 +131,7 @@ class YoloTrain(object):
             first_stage_optimizer = optimizer_with_lr.minimize(self.loss,
                                                       var_list=self.first_stage_trainable_var_list)                
 
-            with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
+            with tf.control_dependencies(tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.UPDATE_OPS)):
                 with tf.control_dependencies([first_stage_optimizer, global_step_update]):
                     with tf.control_dependencies([moving_ave]):
                         self.train_op_with_frozen_variables = tf.no_op()
@@ -151,7 +151,7 @@ class YoloTrain(object):
                         self.train_op_with_all_variables = tf.no_op()
 
     def initialize_session(self, pretrained_ckpt):
-        self.sess.run(tf.global_variables_initializer())
+        self.sess.run(tf.compat.v1.global_variables_initializer())
 
         try:
             print('=> Restoring weights from: %s ... ' % pretrained_ckpt)
