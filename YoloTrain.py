@@ -75,7 +75,7 @@ class YoloTrain(object):
         with tf.name_scope('loader_and_saver'):
             self.loader = tf.compat.v1.train.Saver(self.net_var)
 
-            self.saver  = tf.compat.v1.train.Saver(tf.global_variables(), max_to_keep=20)
+            self.saver  = tf.compat.v1.train.Saver(tf.compat.v1.global_variables(), max_to_keep=20)
 
         if hyperparameter_search == False:
             with tf.name_scope('summary'):
@@ -119,7 +119,7 @@ class YoloTrain(object):
 
         with tf.name_scope("define_first_stage_train"):
             self.first_stage_trainable_var_list = []
-            for var in tf.trainable_variables():
+            for var in tf.compat.v1.trainable_variables():
                 var_name = var.op.name
                 var_name_mess = str(var_name).split('/')
                 if var_name_mess[0] in ['conv_sbbox', 'conv_mbbox', 'conv_lbbox']:
@@ -145,7 +145,7 @@ class YoloTrain(object):
             second_stage_optimizer = optimizer_with_lr.minimize(self.loss,
                                                       var_list=self.second_stage_trainable_var_list)                
             
-            with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
+            with tf.control_dependencies(tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.UPDATE_OPS)):
                 with tf.control_dependencies([second_stage_optimizer, global_step_update]):
                     with tf.control_dependencies([moving_ave]):
                         self.train_op_with_all_variables = tf.no_op()

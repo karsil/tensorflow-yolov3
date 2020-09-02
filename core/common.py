@@ -37,7 +37,7 @@ def convolutional(input_data, filters_shape, trainable, name, downsample=False, 
                                                  moving_mean_initializer=tf.zeros_initializer(),
                                                  moving_variance_initializer=tf.ones_initializer(), training=trainable)
         else:
-            bias = tf.get_variable(name='bias', shape=filters_shape[-1], trainable=True,
+            bias = tf.compat.v1.get_variable(name='bias', shape=filters_shape[-1], trainable=True,
                                    dtype=tf.float32, initializer=tf.constant_initializer(0.0))
             conv = tf.nn.bias_add(conv, bias)
 
